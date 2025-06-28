@@ -1,13 +1,19 @@
 CFLAGS=-Wall -g
-.PHONY: clean all	
-targets = ex1
-sources = ex1.c
-objects = ex1.o
-all: $(targets)
-	@echo "all done"
+.PHONY: clean all
+
+SOURCES := $(wildcard ex*.c)
+OBJECTS := $(SOURCES:.c=.o)
+TARGETS := $(SOURCES:.c=)
+
+all: $(TARGETS)
+	@echo "Build complete: $(TARGETS)"
+	
 clean:
-	rm -f *.o $(targets)
+	rm -f $(TARGETS) $(OBJECTS)
+	
 %.o: %.c
-	gcc -c $< -o $@
-$(targets): $(objects)
-	gcc $(objects) -o $@
+	$(CC) $(CFLAGS) -c $< -o $@
+
+%: %.o
+	$(CC) $(CFLAGS) $< -o $@
+
