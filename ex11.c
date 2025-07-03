@@ -17,7 +17,10 @@ int main(int argc, char *argv[])
     };
 
 	i = 1;
-	while(i < argc && i < 5){
+	while(i < argc){
+		if(i>5){
+			break;
+		}
 		states[i-1] = argv[i];
 		i++;
 	}
