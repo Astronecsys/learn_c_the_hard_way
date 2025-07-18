@@ -22,6 +22,8 @@ struct Connection {
     struct Database *db;
 };
 
+struct Connection g_conn;
+
 void Database_close(struct Connection *conn);
 
 void die(struct Connection *conn, const char *message) {
@@ -37,6 +39,10 @@ void die(struct Connection *conn, const char *message) {
 }
 
 void Address_print(struct Address *addr) {
+    if (addr == NULL) {
+        printf("Empty Address\n");
+        return;
+    }
     printf("%d %s %s\n", addr->id, addr->name, addr->email);
 }
 
@@ -77,7 +83,7 @@ void Database_load(struct Connection *conn) {
 }
 
 struct Connection *Database_open(const char *filename, char mode) {
-    struct Connection *conn = malloc(sizeof(struct Connection));
+    struct Connection *conn = &g_conn;
     if (!conn)
         die(conn, "Memory error");
 
@@ -119,7 +125,6 @@ void Database_close(struct Connection *conn) {
             }
             free(db);
         }
-        free(conn);
     }
 }
 
@@ -212,6 +217,19 @@ void Database_list(struct Connection *conn) {
     }
 }
 
+void Database_find(struct Connection *conn, char *target) {
+    struct Database *db = conn->db;
+    int max_rows = db->max_rows;
+    for (int i = 0; i < max_rows; ++i) {
+        struct Address *cur = &db->rows[i];
+        if (cur->set == 1 && strcmp(cur->name, target) == 0) {
+            Address_print(cur);
+            return;
+        }
+    }
+    Address_print(NULL);
+}
+
 int main(int argc, char **argv) {
     if (argc < 3)
         die(NULL, "USAGE: ex17 <dbfile> <action> [action params]");
@@ -261,6 +279,12 @@ int main(int argc, char **argv) {
         break;
     case 'l':
         Database_list(conn);
+        break;
+    case 'f':
+        if (argc != 4) {
+            die(conn, "Need name to find");
+        }
+        Database_find(conn, argv[3]);
         break;
     default:
         die(conn, "Invalid action, "
